@@ -21,8 +21,9 @@ def filter_tags(element):
 
 def connect_page(url):
     # Connect to a page. Try again after 2 seconds
+    header = {'user-agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:75.0) Gecko/20100101 Firefox/75.0"}
     try:
-        response = requests.get(url, timeout=(5, 30), allow_redirects=True)
+        response = requests.get(url, timeout=(5, 30), allow_redirects=True, headers=header)
     except requests.RequestException:
         return None
     return response
@@ -36,9 +37,11 @@ def scrape_links(html):
 
 def extract_data(html_string):
     soup = BeautifulSoup(html_string, 'html.parser')
-    comments = soup.find_all(text=lambda text: isinstance(text, Comment))
+    comments = soup.findAll(text=lambda text: isinstance(text, Comment))
     for comment in comments:
         comment.extract()
+    for div in soup.find_all("div", {'class': 'browser-stripe'}):
+        div.decompose()
     texts = soup.find_all(text=True)
     filtered_text = filter(filter_tags, texts)
     return " ".join([i.strip() for i in filtered_text]).encode('utf-8', errors='ignore').decode('utf-8')
