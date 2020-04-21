@@ -22,7 +22,7 @@ def filter_tags(element):
 def connect_page(url):
     # Connect to a page. Try again after 2 seconds
     try:
-        result = requests.get(url, timeout=2)
+        result = requests.get(url, timeout=10)
     except requests.ConnectionError:
         return ''
     return result
@@ -48,5 +48,5 @@ def extract_data(html_string):
 def write_data_to_file(html, url, file_id):
     extracted_text = extract_data(html)
     with open(file_id, 'w') as f:
-        f.writelines("URL:" + url)
-        f.writelines(extracted_text)
+        f.write(url + "\n")
+        f.write(extracted_text)

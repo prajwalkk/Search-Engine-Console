@@ -5,14 +5,15 @@ from pathlib import Path
 from Crawler.Domain import get_domain_name, edit_url
 from Crawler.Spider import *
 
-MAX_COUNT = 3
+MAX_COUNT = 3000
 BASE_URL = "https://cs.uic.edu"
 DOMAIN = "uic.edu"
 BLACK_LIST = ['.gif', '.jpeg', '.jpg', '.ps', '.ppt', '.mp4',
               '.mp3', '.svg', 'mailto:', 'favicon', '.ico',
               '.css', '.apk', '.js', '.png', '.gif', '.pdf',
               '.doc', '@', 'tel']
-PROJECT_PATH = '/CrawledData' + datetime.now().strftime('%Y%m%d')
+
+PROJECT_PATH = 'CrawledData/' + str(datetime.now().strftime('%Y%m%d')) + "/"
 
 
 class WebCrawler:
@@ -22,8 +23,7 @@ class WebCrawler:
         self.count = 0
         self.url_queue.append(base_url)
         self.crawled = set()
-        print(PROJECT_PATH)
-        Path(PROJECT_PATH).mkdir(exist_ok=True)
+        Path(PROJECT_PATH).mkdir(parents=True, exist_ok=True)
 
     @staticmethod
     def valid_link(url):
@@ -60,7 +60,7 @@ class WebCrawler:
                     if response.status_code == requests.codes.ok:
                         print("Success: writing to file:", self.count)
                         self.get_links(response.text, response.url)
-
+                        write_data_to_file(response.text, response.url, PROJECT_PATH + str(self.count))
                     else:
                         print("Response Failed")
 
