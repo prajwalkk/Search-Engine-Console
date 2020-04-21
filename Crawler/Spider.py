@@ -42,11 +42,11 @@ def extract_data(html_string):
     texts = soup.find_all(text=True)
     filtered_text = filter(filter_tags, texts)
 
-    print(" ".join([i.strip() for i in filtered_text]))
+    return " ".join([i.strip() for i in filtered_text])
 
 
-def write_data_to_file(html, url, id):
-    pass
-
-
-extract_data(connect_page('https://cs.uic.edu').text)
+def write_data_to_file(html, url, file_id):
+    extracted_text = extract_data(html)
+    with open(file_id, 'w') as f:
+        f.writelines("URL:" + url)
+        f.writelines(extracted_text)
