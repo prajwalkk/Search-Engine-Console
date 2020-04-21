@@ -22,10 +22,10 @@ def filter_tags(element):
 def connect_page(url):
     # Connect to a page. Try again after 2 seconds
     try:
-        result = requests.get(url, timeout=10)
-    except requests.ConnectionError:
-        return ''
-    return result
+        response = requests.get(url, timeout=10, allow_redirects=True)
+    except requests.RequestException:
+        return None
+    return response
 
 
 def scrape_links(html):
@@ -41,12 +41,13 @@ def extract_data(html_string):
         comment.extract()
     texts = soup.find_all(text=True)
     filtered_text = filter(filter_tags, texts)
-
-    return " ".join([i.strip() for i in filtered_text])
+    return " ".join([i.strip() for i in filtered_text]).encode('utf-8', errors='ignore').decode('utf-8')
 
 
 def write_data_to_file(html, url, file_id):
     extracted_text = extract_data(html)
-    with open(file_id, 'w') as f:
+    if extracted_text is '':
+        raise ValueError
+    with open(file_id, 'w', errors='ignore', encoding='utf-8') as f:
         f.write(url + "\n")
         f.write(extracted_text)

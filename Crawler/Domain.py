@@ -25,4 +25,4 @@ def edit_url(link, parent_link):
         new_link = link_parsed._replace(scheme='https', netloc=parent_parsed.netloc)
     else:
         new_link = link_parsed._replace(scheme='https')
-    return new_link.geturl()
+    return new_link.geturl().rstrip('/') + '/'
