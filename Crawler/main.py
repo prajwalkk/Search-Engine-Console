@@ -17,7 +17,7 @@ BLACK_LIST = ['.gif', '.jpeg', '.jpg', '.ps', '.ppt', '.mp4',
 
 date_now = str(datetime.now().strftime('%Y%m%d'))
 PROJECT_PATH = 'CrawledData/' + date_now + "/"
-log_file = date_now + "_log.log"
+log_file = date_now + ".log"
 
 
 class WebCrawler:
@@ -54,15 +54,16 @@ class WebCrawler:
 
     def run_scraper(self):
         while self.count < MAX_COUNT:
-            target_link = self.url_queue.popleft().rstrip('/') + '/'
-
+            target_link = self.url_queue.popleft().rstrip('/')
             if target_link not in self.crawled:
                 response = connect_page(target_link)
                 if response is not None:
                     if response.status_code == requests.codes.ok and \
                             'text/html' in response.headers['Content-Type'] and \
-                            self.valid_link(response.url):
+                            self.valid_link(response.url) \
+                            and response.url.rstrip('/') not in self.crawled:
                         # Status code 200, html file and no external redirect
+                        # also check if redirected file is going to same URL
                         # print("Success: writing to file:", self.count)
                         self.count += 1
                         print(self.count, "URL Scraping:", target_link)

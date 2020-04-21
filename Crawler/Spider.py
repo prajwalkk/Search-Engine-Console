@@ -22,7 +22,7 @@ def filter_tags(element):
 def connect_page(url):
     # Connect to a page. Try again after 2 seconds
     try:
-        response = requests.get(url, timeout=10, allow_redirects=True)
+        response = requests.get(url, timeout=(5, 30), allow_redirects=True)
     except requests.RequestException:
         return None
     return response
