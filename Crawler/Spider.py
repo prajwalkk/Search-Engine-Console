@@ -52,5 +52,5 @@ def write_data_to_file(html, url, file_id):
     if extracted_text is '':
         raise ValueError
     with open(file_id, 'w', errors='ignore', encoding='utf-8') as f:
-        f.write(url + "\n")
+        f.write(url.strip('/') + "\n")
         f.write(extracted_text)

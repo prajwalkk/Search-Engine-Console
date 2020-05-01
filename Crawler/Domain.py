@@ -1,3 +1,5 @@
+# %%
+
 from urllib.parse import urlparse
 
 
@@ -12,7 +14,7 @@ def get_domain_name(url):
 # Get sub domain name (name.example.com)
 def get_sub_domain_name(url):
     try:
-        return urlparse(url).netloc
+        return urlparse(url).netloc.replace("www.", "")
     except:
         return ''
 
@@ -22,7 +24,9 @@ def edit_url(link, parent_link):
     parent_parsed = urlparse(parent_link)
 
     if link_parsed.netloc is '':
-        new_link = link_parsed._replace(scheme='https', netloc=parent_parsed.netloc)
+        parent_loc = parent_parsed.netloc.replace("www.", '') if parent_parsed.netloc.startswith(
+            "www.") else parent_parsed.netloc
+        new_link = link_parsed._replace(scheme='https', netloc=parent_loc)
     else:
-        new_link = link_parsed._replace(scheme='https')
+        new_link = link_parsed._replace(scheme='https', netloc=link_parsed.netloc.replace("www.", ''))
     return new_link.geturl().rstrip('/')

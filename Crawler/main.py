@@ -4,7 +4,10 @@ from collections import deque
 from datetime import datetime
 from pathlib import Path
 
+import networkx as nx
+
 from Crawler.Domain import get_domain_name, edit_url
+from Crawler.GenerateGraph import add_edges, save_graph
 from Crawler.Spider import *
 
 MAX_COUNT = 3000
@@ -17,7 +20,10 @@ BLACK_LIST = ['.gif', '.jpeg', '.jpg', '.ps', '.ppt', '.mp4',
 
 date_now = str(datetime.now().strftime('%Y%m%d'))
 PROJECT_PATH = 'CrawledData/' + date_now + "/"
+OUTLINK_PATH = 'Links/' + date_now + "/"
+FINAL_GRAPH_PATH = OUTLINK_PATH + 'Final/'
 log_file = date_now + ".log"
+network_graph = nx.DiGraph()
 
 
 class WebCrawler:
@@ -28,6 +34,7 @@ class WebCrawler:
         self.url_queue.append(base_url)
         self.crawled = set()
         Path(PROJECT_PATH).mkdir(parents=True, exist_ok=True)
+        Path(OUTLINK_PATH).mkdir(parents=True, exist_ok=True)
 
     @staticmethod
     def valid_link(url):
@@ -48,9 +55,15 @@ class WebCrawler:
             a_tag_text = link['href']
             if not any(bad_links in a_tag_text for bad_links in ['tel', 'mailto', '#']):
                 a_url = edit_url(link['href'], url)
-                if self.valid_link(a_url) and a_url not in self.crawled:
-                    self.url_queue.append(a_url)
+                if self.valid_link(a_url):
+                    if a_url not in self.crawled:
+                        # Add to queue only if the link is not crawled
+                        self.url_queue.append(a_url)
+                    # This is to add nodes for graph
                     relevant_links.add(a_url)
+        # After you get all relevant links from a page
+        # Add nodes and outlinks from current node
+        add_edges(url, relevant_links, network_graph)
 
     def run_scraper(self):
         while self.count < MAX_COUNT:
@@ -67,7 +80,11 @@ class WebCrawler:
                         # print("Success: writing to file:", self.count)
                         self.count += 1
                         print(self.count, "URL Scraping:", target_link)
-                        self.crawled.add(target_link)
+                        if target_link == response.url.rstrip('/'):
+                            self.crawled.add(target_link)
+                        else:
+                            self.crawled.add(target_link)
+                            self.crawled.add(response.url.rstrip('/'))
                         self.get_links(response.text, response.url)
                         try:
                             write_data_to_file(response.text, response.url, PROJECT_PATH + str(self.count))
@@ -82,6 +99,11 @@ class WebCrawler:
                         except:
                             print("Response Failed ", target_link)
                         logging.error("Response Failed" + target_link)
+        print("Max Reached")
+        print("Generating Web Graph")
+        # Retain only crawled sites in the graph
+        save_graph(network_graph, OUTLINK_PATH + "final_graph.gpickle")
+        # draw_graph(network_graph)
 
 
 if __name__ == '__main__':
